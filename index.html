@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Diario de Vicho — Newsletter</title>
+<style>
+  :root{
+    --bg:#0c0f15; --paper:#10151d; --card:#161c26; --line:#232b38;
+    --txt:#eef1f6; --muted:#98a2b1; --soft:#c9d1de;
+    --ai:#8b7bff; --fin:#46d08a; --sport:#ff7a5c; --geo:#3fb6d6; --lang:#ffcf6b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--txt);line-height:1.65;-webkit-font-smoothing:antialiased}
+  .sheet{max-width:760px;margin:0 auto;background:var(--paper);min-height:100vh;
+    border-left:1px solid var(--line);border-right:1px solid var(--line)}
+  .pad{padding:0 34px}
+
+  /* MASTHEAD */
+  .masthead{padding:40px 34px 26px;border-bottom:2px solid var(--line);text-align:center}
+  .issue{color:var(--muted);font-size:12px;letter-spacing:.22em;text-transform:uppercase}
+  .title{font-size:44px;font-weight:800;letter-spacing:-.025em;margin:8px 0 4px}
+  .title .sun{filter:drop-shadow(0 0 14px rgba(255,207,107,.5))}
+  .sub{color:var(--soft);font-size:15px}
+  .intro{padding:26px 34px 8px;color:var(--soft);font-size:16px}
+  .intro b{color:var(--txt)}
+
+  section{padding:30px 34px;border-top:1px solid var(--line)}
+  .shead{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+  .badge{width:54px;height:54px;border-radius:14px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+  .shead h2{font-size:23px;font-weight:800;letter-spacing:-.01em}
+  .shead .tagline{font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
+  .illus{width:100%;height:200px;border-radius:16px;margin:16px 0 18px;overflow:hidden;border:1px solid var(--line);position:relative}
+  .illus svg{width:100%;height:100%;display:block}
+  .photo{position:relative;width:100%;height:210px;border-radius:16px;margin:16px 0 18px;overflow:hidden;border:1px solid var(--line)}
+  .photo .fb{position:absolute;inset:0}
+  .photo .fb.ai{background:linear-gradient(135deg,#2a2360,#11131f)}
+  .photo .fb.fin{background:linear-gradient(135deg,#0f3b2c,#10151d)}
+  .photo .fb.sport{background:linear-gradient(135deg,#3a2535,#10151d)}
+  .photo .fb.geo{background:linear-gradient(135deg,#0e3a4a,#10151d)}
+  .photo .fb.lang{background:linear-gradient(135deg,#4a3a16,#10151d)}
+  .photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  .photo .credit{position:absolute;right:8px;bottom:6px;z-index:3;font-size:10px;color:#fff;opacity:.7;
+    background:rgba(0,0,0,.45);padding:2px 7px;border-radius:6px}
+  .photo .credit a{color:#fff}
+  p.lead{font-size:15.5px;color:var(--soft);margin-bottom:14px}
+  ul{list-style:none;display:flex;flex-direction:column;gap:13px;margin-top:4px}
+  li{padding-left:18px;position:relative;font-size:15px;color:var(--soft)}
+  li::before{content:"";position:absolute;left:0;top:10px;width:7px;height:7px;border-radius:50%}
+  li b{color:var(--txt)}
+  .ai li::before{background:var(--ai)} .fin li::before{background:var(--fin)}
+  .sport li::before{background:var(--sport)} .geo li::before{background:var(--geo)} .lang li::before{background:var(--lang)}
+  .pull{margin:18px 0 4px;padding:14px 18px;border-left:3px solid var(--ai);background:#12161e;border-radius:0 12px 12px 0;
+    font-size:15px;color:var(--soft);font-style:italic}
+  .pull b{font-style:normal}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:3px}
+  .up{background:rgba(70,208,138,.16);color:var(--fin)} .down{background:rgba(255,122,92,.16);color:var(--sport)}
+  .vs{background:#0e131b;border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin:14px 0 6px}
+  .vs .team{font-weight:800;font-size:16px} .vs .pct{font-size:13px;color:var(--muted);font-weight:600}
+  .bar{height:9px;border-radius:6px;background:var(--line);overflow:hidden;display:flex}
+  .bar i{display:block;height:100%}.bar .a{background:var(--sport)}.bar .b{background:var(--geo)}
+  .factbox{margin-top:16px;background:#0e131b;border:1px dashed var(--line);border-radius:14px;padding:16px 18px}
+  .factbox .k{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--lang);font-weight:700}
+
+  /* ARCHIVE + FOOTER */
+  .archive{padding:30px 34px;border-top:1px solid var(--line)}
+  .archive h3{font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:14px}
+  .chips{display:flex;flex-wrap:wrap;gap:10px}
+  .chip{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:9px 13px;font-size:13px;color:var(--soft);text-decoration:none;display:inline-block}
+  .chip.today{border-color:var(--lang);color:var(--lang);font-weight:700}
+  footer{padding:30px 34px 50px;text-align:center;color:var(--muted);font-size:13px;border-top:2px solid var(--line)}
+  footer .big{color:var(--soft);font-size:15px;margin-bottom:8px}
+  @media(max-width:640px){.pad,.masthead,section,.archive,footer,.intro{padding-left:20px;padding-right:20px}.title{font-size:34px}}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="masthead">
+    <div class="issue">Edición #1 · Viernes 29 de mayo de 2026</div>
+    <div class="title">El Diario de Vicho <span class="sun">☀️</span></div>
+    <div class="sub">Tu newsletter diario: IA, mercados, mundo, deporte e idiomas</div>
+  </div>
+
+  <div class="intro">
+    Buenos días, Vicho. Hoy: <b>Anthropic lanza Opus 4.8</b> y Google borra el buscador clásico; el S&amp;P 500 roza nuevos máximos mientras la inflación presiona; mañana <b>final de Champions</b> PSG vs Arsenal en Budapest; y Colombia vota en dos días. Cinco minutos te bastan. ☕
+  </div>
+
+  <!-- IA -->
+  <section class="ai">
+    <div class="shead">
+      <span class="badge" style="background:rgba(139,123,255,.14)">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#8b7bff" stroke-width="1.8"><rect x="5" y="6" width="14" height="12" rx="3"/><circle cx="9.5" cy="12" r="1.3" fill="#8b7bff" stroke="none"/><circle cx="14.5" cy="12" r="1.3" fill="#8b7bff" stroke="none"/><path d="M12 6V3M9 3h6"/><path d="M5 10H3M21 10h-2M5 14H3M21 14h-2"/></svg>
+      </span>
+      <div><h2>Inteligencia Artificial</h2><div class="tagline">Tecnología · Lo importante</div></div>
+    </div>
+    <div class="photo">
+      <div class="fb ai"></div>
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Jensen_Huang_(cropped).jpg?width=900" alt="Jensen Huang, CEO de Nvidia" loading="lazy" style="object-position:center 30%" onerror="this.remove()">
+      <span class="credit">Foto: Wikimedia Commons · Jensen Huang (CC BY 2.0)</span>
+    </div>
+    <p class="lead">La semana cierra con dos movimientos sísmicos: un nuevo modelo líder de Anthropic y Google reescribiendo cómo busca el mundo.</p>
+    <ul>
+      <li><b>Anthropic lanzó Claude Opus 4.8</b>, su modelo público más avanzado hasta la fecha. La novedad principal: <em>Dynamic Workflows</em>, una herramienta que permite a Opus coordinar cientos de subagentes de IA trabajando en paralelo sobre una misma tarea compleja.</li>
+      <li><b>Google eliminó el buscador clásico</b> para sus usuarios globales: el motor de búsqueda principal ahora corre sobre <b>Gemini 3.5 Flash</b> con interfaz conversacional por defecto. La caja de búsqueda tradicional, retirada.</li>
+      <li><b>Sam Altman y Dario Amodei</b> retrocedieron en sus predicciones sobre destrucción masiva de empleos blancos: Altman admitió que su llamado de corto plazo "estaba equivocado", y Amodei reencuadra la automatización como un multiplicador de productividad 10×.</li>
+      <li><b>Trump anuló</b> una orden ejecutiva voluntaria que obligaría a empresas de IA a someter modelos avanzados a revisión de seguridad 90 días antes de publicarlos — tras conversaciones con Musk, Zuckerberg y Sacks.</li>
+    </ul>
+    <div class="pull">"La automatización no destruye empleos, los multiplica por 10." — <b>Dario Amodei, CEO de Anthropic</b></div>
+  </section>
+
+  <!-- FINANZAS -->
+  <section class="fin">
+    <div class="shead">
+      <span class="badge" style="background:rgba(70,208,138,.14)">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#46d08a" stroke-width="1.8"><path d="M3 17l5-5 4 3 6-7"/><path d="M21 8v4h-4"/></svg>
+      </span>
+      <div><h2>Finanzas y Mercados</h2><div class="tagline">Wall Street · Para inversores</div></div>
+    </div>
+    <div class="photo">
+      <div class="fb fin"></div>
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/NYSE_Advanced_Trading_Floor.jpg?width=1000" alt="Parqué de la Bolsa de Nueva York" loading="lazy" onerror="this.remove()">
+      <span class="credit">Foto: Wikimedia Commons · NYSE Trading Floor</span>
+    </div>
+    <p class="lead">Récords con asterisco: las bolsas baten techos históricos, pero la inflación sigue sin bajar la guardia.</p>
+    <ul>
+      <li><b>S&amp;P 500</b> cerró el jueves en <b>7.592 puntos</b> <span class="tag up">+0,5%</span>, nuevo máximo histórico, incluso con el dato PCE de inflación en su nivel más alto en casi tres años. El Nasdaq Composite llegó a <b>26.247</b> <span class="tag up">+1,7%</span> esta semana.</li>
+      <li>Día mixto en tech: <b>Nvidia</b> <span class="tag down">−1%</span> arrastró a los chips, pero el software de IA compensó — <b>Microsoft, Oracle y Palantir</b> <span class="tag up">+3–4%</span> en la semana.</li>
+      <li><b>Apple</b> mantiene fuerza sobre los <b>US$300</b> por acción. <b>Nvidia</b> y <b>Google</b> superan ya los 4,7 T USD de capitalización bursátil cada una.</li>
+      <li>📊 <b>Para el inversor individual:</b> entrar en máximos históricos con inflación pegajosa es arriesgado a corto plazo. La tendencia estructural (IA, semiconductores) sigue intacta, pero conviene no concentrar y mantener horizonte largo.</li>
+    </ul>
+  </section>
+
+  <!-- DEPORTES -->
+  <section class="sport">
+    <div class="shead">
+      <span class="badge" style="background:rgba(255,122,92,.14)">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ff7a5c" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3l2.5 4-2.5 2-2.5-2L12 3zM4 10l4 1 1 3-3 2-2.5-3L4 10zm16 0l-1 3 1 3 3-2-1-4h-2zm-8 5l3 1 .5 4h-7L12 15z"/></svg>
+      </span>
+      <div><h2>Deportes</h2><div class="tagline">Fútbol · UFC</div></div>
+    </div>
+    <div class="photo">
+      <div class="fb sport"></div>
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Pusk%C3%A1s_Ar%C3%A9na_02.jpg?width=1200" alt="Puskás Aréna, Budapest" loading="lazy" onerror="this.remove()">
+      <span class="credit">Foto: Wikimedia Commons · Puskás Aréna</span>
+    </div>
+    <p class="lead">Fin de semana cargado: la orejona se decide mañana en Budapest y el UFC también mete su pelea nocturna.</p>
+    <ul>
+      <li>🏆 <b>Final de la UEFA Champions League — mañana</b> (sáb 30 may, 18:00 CET, Puskás Aréna, Budapest): <b>PSG vs Arsenal</b>. PSG busca repetir título y ser el primer club en hacerlo desde el Madrid (2016–18); Arsenal va por el doblete tras ganar la Premier.</li>
+      <li>Morbo extra: PSG <b>eliminó al Arsenal</b> en semifinales la temporada pasada. Arsenal tendrá revancha o el trauma se profundiza.</li>
+    </ul>
+    <div class="vs">
+      <span class="team">PSG <span class="pct">56%</span></span>
+      <span class="pct">predicción supercomputador Opta</span>
+      <span class="team"><span class="pct">44%</span> Arsenal</span>
+    </div>
+    <div class="bar"><i class="a" style="width:56%"></i><i class="b" style="width:44%"></i></div>
+    <ul style="margin-top:16px">
+      <li>🥊 <b>UFC Fight Night: Song vs. Figueiredo</b> — mañana también (30 may, Galaxy Arena, Macau). El colombiano <b>Deiveson Figueiredo</b> (#7 bantamweight) enfrenta al chino <b>Song Yadong</b> (#5) en una pelea divisional clave.</li>
+      <li>🥊 <b>El bombazo del mes:</b> UFC Freedom 250 <b>en la Casa Blanca</b> (14 jun) — primer evento deportivo profesional en la residencia presidencial — estelar: <b>Ilia Topuria vs Justin Gaethje</b>.</li>
+    </ul>
+  </section>
+
+  <!-- GEOGRAFIA -->
+  <section class="geo">
+    <div class="shead">
+      <span class="badge" style="background:rgba(63,182,214,.14)">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3fb6d6" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>
+      </span>
+      <div><h2>Geografía e Historia</h2><div class="tagline">El dato del mundo</div></div>
+    </div>
+    <div class="photo">
+      <div class="fb geo"></div>
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Bogot%C3%A1_-_Colombia.jpg?width=1000" alt="Bogotá, Colombia" loading="lazy" onerror="this.remove()">
+      <span class="credit">Foto: Wikimedia Commons · Bogotá, Colombia</span>
+    </div>
+    <p class="lead">En dos días, Colombia elige presidente. Una democracia que siempre sorprende.</p>
+    <ul>
+      <li>El <b>31 de mayo</b> Colombia celebra primera vuelta presidencial. Los tres favoritos según encuestas son <b>Iván Cepeda</b> (Pacto Histórico, ~44% intención de voto), <b>Paloma Valencia</b> (Centro Democrático) y <b>Abelardo de la Espriella</b> (Defensores de la Patria). Si nadie supera el 50%, hay segunda vuelta el <b>21 de junio</b>.</li>
+      <li>Dato curioso: en toda la historia de Colombia, <b>solo un candidato</b> ha ganado la presidencia en primera vuelta. Es una democracia que casi siempre va a segunda ronda.</li>
+      <li>Colombia es el único país de Sudamérica con costas en <b>dos océanos</b> (Atlántico y Pacífico) y es el segundo más biodiverso del planeta. Su capital, Bogotá, está a <b>2.640 metros</b> sobre el nivel del mar — más alta que la mayoría de las capitales europeas.</li>
+    </ul>
+  </section>
+
+  <!-- IDIOMAS -->
+  <section class="lang">
+    <div class="shead">
+      <span class="badge" style="background:rgba(255,207,107,.14)">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ffcf6b" stroke-width="1.8"><path d="M4 5h16v14H4z"/><path d="M4 9h16M9 5v14"/><path d="M13 13l2 3 2-3"/></svg>
+      </span>
+      <div><h2>Idiomas</h2><div class="tagline">Palabra y dato del día</div></div>
+    </div>
+    <div class="photo">
+      <div class="fb lang"></div>
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Old_book_bindings.jpg?width=1000" alt="Libros antiguos" loading="lazy" onerror="this.remove()">
+      <span class="credit">Foto: Wikimedia Commons · Old book bindings</span>
+    </div>
+    <p class="lead">Una palabra que usamos todos los días y cuyo origen nadie adivinaría.</p>
+    <ul>
+      <li>La palabra <b>"tajo"</b> (como en "ir al tajo", ponerse a trabajar) viene del latín <em>taleare</em>, "cortar". En la Edad Media, los obreros marcaban su jornada en un palo con muescas — cada corte era un día trabajado. De ahí el "tajo" como lugar o acto de trabajo.</li>
+      <li>El español es el único idioma romance que tiene dos verbos <b>"ser" y "estar"</b> para cubrir lo que en inglés, francés o italiano es solo uno (<em>to be / être / essere</em>). La distinción permanente vs. temporal que eso implica es, para los hablantes nativos, completamente intuitiva y, para los estudiantes, la pesadilla número uno del idioma.</li>
+      <li>La palabra <b>"candidato"</b> viene del latín <em>candidatus</em> — "el que viste de blanco". En Roma, los aspirantes al cargo se vestían de toga blanca (<em>candida</em>) para simbolizar pureza y transparencia. Con Colombia votando el domingo, el dato no podía ser más oportuno.</li>
+    </ul>
+    <div class="factbox">
+      <div class="k">Palabra del día</div>
+      <p style="margin-top:6px"><b>Candidato</b> — del latín <em>candidatus</em> (el de la toga blanca). Dos mil años después seguimos eligiendo candidatos, aunque las togas blancas brilen por su ausencia.</p>
+    </div>
+  </section>
+
+  <!-- ARCHIVO -->
+  <div class="archive">
+    <h3>📚 Ediciones anteriores</h3>
+    <div class="chips">
+      <a class="chip today" href="ediciones/2026-05-29.html">#1 · 29 may 2026 · hoy</a>
+    </div>
+  </div>
+
+  <footer>
+    <div class="big">¡Que tengas un gran viernes, Vicho! 🍿</div>
+    El Diario de Vicho · generado automáticamente cada mañana
+  </footer>
+
+</div>
+</body>
+</html>

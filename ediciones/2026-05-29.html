@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Diario de Vicho — Newsletter</title>
+<style>
+  :root{
+    --bg:#0c0f15; --paper:#10151d; --card:#161c26; --line:#232b38;
+    --txt:#eef1f6; --muted:#98a2b1; --soft:#c9d1de;
+    --ai:#8b7bff; --fin:#46d08a; --sport:#ff7a5c; --geo:#3fb6d6; --lang:#ffcf6b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--txt);line-height:1.65;-webkit-font-smoothing:antialiased}
+  .sheet{max-width:760px;margin:0 auto;background:var(--paper);min-height:100vh;
+    border-left:1px solid var(--line);border-right:1px solid var(--line)}
+  .pad{padding:0 34px}
+
+  /* MASTHEAD */
+  .masthead{padding:40px 34px 26px;border-bottom:2px solid var(--line);text-align:center}
+  .issue{color:var(--muted);font-size:12px;letter-spacing:.22em;text-transform:uppercase}
+  .title{font-size:44px;font-weight:800;letter-spacing:-.025em;margin:8px 0 4px}
+  .title .sun{filter:drop-shadow(0 0 14px rgba(255,207,107,.5))}
+  .sub{color:var(--soft);font-size:15px}
+  .intro{padding:26px 34px 8px;color:var(--soft);font-size:16px}
+  .intro b{color:var(--txt)}
+
+  section{padding:30px 34px;border-top:1px solid var(--line)}
+  .shead{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+  .badge{width:54px;height:54px;border-radius:14px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+  .shead h2{font-size:23px;font-weight:800;letter-spacing:-.01em}
+  .shead .tagline{font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
+  .illus{width:100%;height:200px;border-radius:16px;margin:16px 0 18px;overflow:hidden;border:1px solid var(--line);position:relative}
+  .illus svg{width:100%;height:100%;display:block}
+  .photo{position:relative;width:100%;height:210px;border-radius:16px;margin:16px 0 18px;overflow:hidden;border:1px solid var(--line)}
+  .photo .fb{position:absolute;inset:0}
+  .photo .fb.ai{background:linear-gradient(135deg,#2a2360,#11131f)}
+  .photo .fb.fin{background:linear-gradient(135deg,#0f3b2c,#10151d)}
+  .photo .fb.sport{background:linear-gradient(135deg,#3a2535,#10151d)}
+  .photo .fb.geo{background:linear-gradient(135deg,#0e3a4a,#10151d)}
+  .photo .fb.lang{background:linear-gradient(135deg,#4a3a16,#10151d)}
+  .photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  .photo .credit{position:absolute;right:8px;bottom:6px;z-index:3;font-size:10px;color:#fff;opacity:.7;
+    background:rgba(0,0,0,.45);padding:2px 7px;border-radius:6px}
+  .photo .credit a{color:#fff}
+  p.lead{font-size:15.5px;color:var(--soft);margin-bottom:14px}
+  ul{list-style:none;display:flex;flex-direction:column;gap:13px;margin-top:4px}
+  li{padding-left:18px;position:relative;font-size:15px;color:var(--soft)}
+  li::before{content:"";position:absolute;left:0;top:10px;width:7px;height:7px;border-radius:50%}
+  li b{color:var(--txt)}
+  .ai li::before{background:var(--ai)} .fin li::before{background:var(--fin)}
+  .sport li::before{background:var(--sport)} .geo li::before{background:var(--geo)} .lang li::before{background:var(--lang)}
+  .pull{margin:18px 0 4px;padding:14px 18px;border-left:3px solid var(--ai);background:#12161e;border-radius:0 12px 12px 0;
+    font-size:15px;color:var(--soft);font-style:italic}
+  .pull b{font-style:normal}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:3px}
+  .up{background:rgba(70,208,138,.16);color:var(--fin)} .down{background:rgba(255,122,92,.16);color:var(--sport)}
+  .vs{background:#0e131b;border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin:14px 0 6px}
+  .vs .team{font-weight:800;font-size:16px} .vs .pct{font-size:13px;color:var(--muted);font-weight:600}
+  .bar{height:9px;border-radius:6px;background:var(--line);overflow:hidden;display:flex}
+  .bar i{display:block;height:100%}.bar .a{background:var(--sport)}.bar .b{background:var(--geo)}
+  .factbox{margin-top:16px;background:#0e131b;border:1px dashed var(--line);border-radius:14px;padding:16px 18px}
+  .factbox .k{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--lang);font-weight:700}
+
+  /* ARCHIVE + FOOTER */
+  .archive{padding:30px 34px;border-top:1px solid var(--line)}
+  .archive h3{font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:14px}
+  .chips{display:flex;flex-wrap:wrap;gap:10px}
+  .chip{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:9px 13px;font-size:13px;color:var(--soft)}
+  .chip.today{border-color:var(--lang);color:var(--lang);font-weight:700}
+  footer{padding:30px 34px 50px;text-align:center;color:var(--muted);font-size:13px;border-top:2px solid var(--line)}
+  footer .big{color:var(--soft);font-size:15px;margin-bottom:8px}
+  @media(max-width:640px){.pad,.masthead,section,.archive,footer,.intro{padding-left:20px;padding-right:20px}.title{font-size:34px}}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="masthead">
+    <div class="issue">Edición #1 · Viernes 29 de mayo de 2026</div>
+    <div class="title">El Diario de Vicho <span class="sun">☀️</span></div>
+    <div class="sub">Tu newsletter diario: IA, mercados, mundo, deporte e idiomas</div>
+  </div>
+
+  <div class="intro">
+    Buenos días, Vicho. Jornada de <b>récords en Wall Street</b> pese a una inflación incómoda, el CEO de Nvidia bajándole el tono al pánico por la IA, y mañana <b>final de Champions</b>. Aquí va todo, en cinco minutos de lectura. ☕
+  </div>
+
+  <!-- IA -->
+  <section class="ai">
+    <div class="shead">
+      <span class="badge" style="background:rgba(139,123,255,.14)">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#8b7bff" stroke-width="1.8"><rect x="5" y="6" width="14" height="12" rx="3"/><circle cx="9.5" cy="12" r="1.3" fill="#8b7bff" stroke="none"/><circle cx="14.5" cy="12" r="1.3" fill="#8b7bff" stroke="none"/><path d="M12 6V3M9 3h6"/><path d="M5 10H3M21 10h-2M5 14H3M21 14h-2"/></svg>
+      </span>
+      <div><h2>Inteligencia Artificial</h2><div class="tagline">Tecnología · Lo importante</div></div>
+    </div>
+    <div class="photo">
+      <div class="fb ai"></div>
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Jensen_Huang_(cropped).jpg?width=900" alt="Jensen Huang, CEO de Nvidia" loading="lazy" style="object-position:center 30%" onerror="this.remove()">
+      <span class="credit">Foto: Wikimedia Commons · Jensen Huang (CC BY 2.0)</span>
+    </div>
+    <p class="lead">La conversación pasó de "¿qué puede crear la IA?" a "¿quién controla los datos, la energía y el agua que necesita?".</p>
+    <ul>
+      <li><b>Jensen Huang (Nvidia)</b> frena el relato de que la IA está destruyendo empleos: dice que la tecnología "aún no es lo bastante madura" para explicar los despidos recientes, que atribuye más a la economía.</li>
+      <li>Nace un debate global sobre el <b>costo oculto</b> de la IA: centros de datos que consumen agua y electricidad a gran escala, vistos como una nueva forma de dependencia geopolítica.</li>
+      <li>El sector vira hacia la <b>madurez</b>: tras la euforia generativa, 2026 trae foco en seguridad, auditoría de código y regulación más estricta.</li>
+    </ul>
+    <div class="pull">"La IA todavía no es lo suficientemente madura" para culparla de los despidos. — <b>Jensen Huang, CEO de Nvidia</b></div>
+  </section>
+
+  <!-- FINANZAS -->
+  <section class="fin">
+    <div class="shead">
+      <span class="badge" style="background:rgba(70,208,138,.14)">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#46d08a" stroke-width="1.8"><path d="M3 17l5-5 4 3 6-7"/><path d="M21 8v4h-4"/></svg>
+      </span>
+      <div><h2>Finanzas y Mercados</h2><div class="tagline">Wall Street · Para inversores</div></div>
+    </div>
+    <div class="photo">
+      <div class="fb fin"></div>
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/NYSE_Advanced_Trading_Floor.jpg?width=1000" alt="Parqué de la Bolsa de Nueva York" loading="lazy" onerror="this.remove()">
+      <span class="credit">Foto: Wikimedia Commons · NYSE Trading Floor</span>
+    </div>
+    <p class="lead">Récords con asterisco: las bolsas suben, pero la inflación recuerda que el dinero sigue caro.</p>
+    <ul>
+      <li><b>S&P 500 y Nasdaq</b> cerraron en <b>máximos históricos</b> (+0,5%) el 28 de mayo, aun con el dato de inflación PCE en su nivel más alto en casi tres años.</li>
+      <li>Día desigual en tecnología: <b>Nvidia</b><span class="tag down">−1%</span> arrastró a los chips, mientras el software de IA voló — <b>Microsoft, Oracle y Palantir</b><span class="tag up">+3–4%</span>.</li>
+      <li><b>Apple</b> sigue fuerte tras superar por primera vez los <b>US$300</b> por acción este mes.</li>
+      <li><b>Para ti como inversor individual:</b> mercado en récords + inflación pegajosa = entradas caras. No es momento de euforia; la diversificación y el horizonte largo mandan.</li>
+    </ul>
+  </section>
+
+  <!-- DEPORTES -->
+  <section class="sport">
+    <div class="shead">
+      <span class="badge" style="background:rgba(255,122,92,.14)">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ff7a5c" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3l2.5 4-2.5 2-2.5-2L12 3zM4 10l4 1 1 3-3 2-2.5-3L4 10zm16 0l-1 3 1 3 3-2-1-4h-2zm-8 5l3 1 .5 4h-7L12 15z"/></svg>
+      </span>
+      <div><h2>Deportes</h2><div class="tagline">Fútbol · UFC</div></div>
+    </div>
+    <div class="photo">
+      <div class="fb sport"></div>
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Pusk%C3%A1s_Ar%C3%A9na_02.jpg?width=1200" alt="Puskás Aréna, Budapest" loading="lazy" onerror="this.remove()">
+      <span class="credit">Foto: Wikimedia Commons · Puskás Aréna</span>
+    </div>
+    <p class="lead">Fin de semana grande: la orejona se decide en Budapest.</p>
+    <ul>
+      <li>🏆 <b>Final de la Champions — mañana</b> (sáb 30 may, 18:00 CET, Puskás Aréna): <b>PSG vs Arsenal</b>. PSG defiende título y busca ser el primero en repetir desde el Madrid; Arsenal va por el doblete tras ganar la Premier.</li>
+      <li>Morbo extra: PSG <b>eliminó al Arsenal</b> en semifinales la temporada pasada antes de coronarse.</li>
+    </ul>
+    <div class="vs">
+      <span class="team">PSG <span class="pct">56%</span></span>
+      <span class="pct">predicción del supercomputador Opta</span>
+      <span class="team"><span class="pct">44%</span> Arsenal</span>
+    </div>
+    <div class="bar"><i class="a" style="width:56%"></i><i class="b" style="width:44%"></i></div>
+    <ul style="margin-top:16px">
+      <li>🥊 <b>UFC — próximo evento:</b> Fight Night <b>Muhammad vs Bonfim</b> (6 jun, Las Vegas).</li>
+      <li>🥊 <b>El bombazo del mes:</b> UFC Freedom 250 <b>en la Casa Blanca</b> (14 jun) — primer evento deportivo en la residencia presidencial — encabezado por <b>Ilia Topuria vs Justin Gaethje</b>.</li>
+    </ul>
+  </section>
+
+  <!-- GEOGRAFIA -->
+  <section class="geo">
+    <div class="shead">
+      <span class="badge" style="background:rgba(63,182,214,.14)">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3fb6d6" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>
+      </span>
+      <div><h2>Geografía e Historia</h2><div class="tagline">El dato del mundo</div></div>
+    </div>
+    <div class="photo">
+      <div class="fb geo"></div>
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Budapest%20-%20Chain%20Bridge%20-%20panoramio.jpg?width=1200" alt="Puente de las Cadenas sobre el Danubio, Budapest" loading="lazy" onerror="this.remove()">
+      <span class="credit">Foto: Wikimedia Commons · Chain Bridge, Budapest</span>
+    </div>
+    <p class="lead">Mientras miramos a Budapest por la final, una curiosidad de su origen.</p>
+    <ul>
+      <li><b>Budapest</b> es en realidad una ciudad "triple": nació en <b>1873</b> de la unión de <b>Buda</b> y <b>Óbuda</b> (orilla oeste, montañosa, con el castillo) y <b>Pest</b> (orilla este, plana y comercial).</li>
+      <li>El <b>río Danubio</b> aún las separa físicamente; los famosos puentes —como el Puente de las Cadenas— fueron clave para coser ambas mitades en una sola capital.</li>
+    </ul>
+  </section>
+
+  <!-- IDIOMAS -->
+  <section class="lang">
+    <div class="shead">
+      <span class="badge" style="background:rgba(255,207,107,.14)">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ffcf6b" stroke-width="1.8"><path d="M4 5h16v14H4z"/><path d="M4 9h16M9 5v14"/><path d="M13 13l2 3 2-3"/></svg>
+      </span>
+      <div><h2>Idiomas</h2><div class="tagline">Palabra y dato del día</div></div>
+    </div>
+    <div class="photo">
+      <div class="fb lang"></div>
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Old_book_bindings.jpg?width=1000" alt="Libros antiguos" loading="lazy" onerror="this.remove()">
+      <span class="credit">Foto: Wikimedia Commons · Old book bindings</span>
+    </div>
+    <p class="lead">Ya que hablamos de Hungría, su idioma es uno de los más raros de Europa.</p>
+    <ul>
+      <li>El <b>húngaro</b> no es indoeuropeo: pertenece a la familia <b>fino-úgrica</b>, lo que lo emparenta lejanamente con el finés y el estonio, y no con sus vecinos eslavos o germánicos.</li>
+      <li>Es famoso por su gramática: usa hasta <b>18 casos gramaticales</b> (el español, prácticamente ninguno).</li>
+    </ul>
+    <div class="factbox">
+      <div class="k">Palabra del día</div>
+      <p style="margin-top:6px"><b>Szia</b> — el saludo informal húngaro ("hola"/"chao"). Suena casi idéntico al italiano <b>ciao</b>, pero es pura coincidencia: vienen de raíces totalmente distintas.</p>
+    </div>
+  </section>
+
+  <!-- ARCHIVO -->
+  <div class="archive">
+    <h3>📚 Ediciones anteriores</h3>
+    <div class="chips">
+      <a class="chip today" href="ediciones/2026-05-29.html">#1 · 29 may 2026 · hoy</a>
+      <span class="chip" style="opacity:.5">Las próximas ediciones aparecerán aquí cada mañana…</span>
+    </div>
+  </div>
+
+  <footer>
+    <div class="big">¡Que tengas un gran viernes, Vicho! 🍿</div>
+    El Diario de Vicho · generado automáticamente cada mañana
+  </footer>
+
+</div>
+</body>
+</html>
