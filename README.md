@@ -22,11 +22,11 @@ No usa frameworks, no tiene JavaScript, no tiene base de datos. Solo HTML y CSS.
 
 | Sección | Color | Contenido |
 |---------|-------|-----------|
-| 🤖 **IA & Tecnología** | `#7c3aed` (violeta) | Noticias de inteligencia artificial, modelos y empresas tech |
-| 💹 **Finanzas** | `#059669` (verde) | Mercados, commodities, índices bursátiles |
-| ⚽ **Deportes** | `#dc2626` (rojo) | Fútbol, tenis, eventos internacionales |
-| 🌍 **Geografía & Historia** | `#0284c7` (celeste) | Efemérides, países, historia del día |
-| 📖 **Idiomas** | `#d97706` (amarillo) | Etimologías, curiosidades del español e inglés |
+| 🤖 **IA & Tecnología** | Noticias de inteligencia artificial, modelos y empresas tech |
+| 💹 **Finanzas** | Mercados, commodities, índices bursátiles |
+| ⚽ **Deportes** | Fútbol, tenis, eventos internacionales |
+| 🌍 **Geografía & Historia** | Efemérides, países, historia del día |
+| 📖 **Idiomas** | Etimologías, curiosidades del español e inglés |
 
 ---
 
