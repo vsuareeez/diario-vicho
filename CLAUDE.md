@@ -43,7 +43,29 @@ Cinco secciones con colores CSS fijos:
 - `<title>` debe incluir la fecha del día
 - Imágenes: siempre verificar filename exacto en Wikimedia Commons antes de usar
 
+## Regla del `tagline` (la línea bajo cada título de sección)
+El `.tagline` es una **etiqueta, no un resumen**. Se descontroló con el tiempo
+(pasó de "Tecnología · Lo importante" a frases enteras con 3-4 datos). Mantenerlo corto:
+- Máximo **~40 caracteres** y **máximo 2 segmentos** separados por ` · `.
+- 2 a 4 palabras. Categoría/tema, no la noticia. La noticia va en el cuerpo, no aquí.
+- ✅ Bien: `Tecnología · IA`, `Wall Street`, `Fútbol · Mundial`, `Efeméride`
+- ❌ Mal: `Seúl, 3ª oficina Asia-Pacífico · LG CNS · Samsung SDS · Fable 5 sigue suspendido`
+
 ## Archivos a actualizar en cada edición
-1. `index.html` → edición actual
-2. `ediciones/YYYY-MM-DD.html` (o `-v2`, `-v3`...) → copia de archivo
-3. Sección `.archive` en ambos archivos → agregar chip de la edición nueva
+1. Crear `ediciones/YYYY-MM-DD.html` (o `-v2`, `-v3`...) con el contenido del día.
+2. Justo antes del `<footer>`, incluir los marcadores del archivo (vacíos):
+   ```html
+   <!-- ARCHIVE:START -->
+   <!-- ARCHIVE:END -->
+   ```
+   **No escribir los chips a mano.**
+3. Ejecutar `python3 build.py`. El script:
+   - genera la lista de chips (número y fecha desde el nombre del archivo),
+   - la inserta en la edición nueva,
+   - regenera `index.html` como copia de la edición más reciente.
+4. `python3 build.py --check` no escribe: falla si algo quedó desincronizado (útil antes del push).
+
+> `index.html` **se genera**, no se edita a mano. Si hay que corregir el contenido
+> de la edición actual, editar el archivo en `ediciones/` y volver a correr `build.py`.
+> Para etiquetas especiales de un chip (p. ej. `(tarde)`), añadir la entrada al dict
+> `ETIQUETAS` en `build.py`.
