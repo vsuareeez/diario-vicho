@@ -43,6 +43,25 @@ Cinco secciones con colores CSS fijos:
 - `<title>` debe incluir la fecha del día
 - Imágenes: siempre verificar filename exacto en Wikimedia Commons antes de usar
 
+## Presupuesto de contenido — OBLIGATORIO (`build.py --check` lo hace cumplir)
+El diario se infló edición a edición sin que nadie lo decidiera: de ~2.000 palabras
+(ediciones #7–#8, el patrón bueno) a ~5.900 (9 jul). El patrón a imitar es la
+edición **#7 (4 jun 2026)**: mismo diseño, mismas 5 secciones, pero conciso.
+Límites duros (validados por `build.py` en la edición nueva; `--check` falla si se pasan):
+
+| Elemento | Límite |
+|---|---|
+| Edición completa | **2.400 palabras** (sin contar el archivo de chips) |
+| Cada `<section>` | **450 palabras** |
+| Cada `<li>` | **110 palabras** (una viñeta = 2-3 frases, no 3 párrafos) |
+| Cada `.lead` | **60 palabras** |
+| Intro bajo el masthead | **30 palabras** (1-2 frases) |
+| Citas `.pull` | **máx 2 por edición, 50 palabras cada una** |
+| `.tagline` | **45 caracteres, máx 2 segmentos** con ` · ` |
+
+Principios: **una noticia por sección**, no tres. Cortar datos secundarios, no
+comprimirlos con abreviaturas. Si algo no cabe, va en la edición de mañana.
+
 ## Regla del `tagline` (la línea bajo cada título de sección)
 El `.tagline` es una **etiqueta, no un resumen**. Se descontroló con el tiempo
 (pasó de "Tecnología · Lo importante" a frases enteras con 3-4 datos). Mantenerlo corto:
@@ -60,10 +79,14 @@ El `.tagline` es una **etiqueta, no un resumen**. Se descontroló con el tiempo
    ```
    **No escribir los chips a mano.**
 3. Ejecutar `python3 build.py`. El script:
-   - genera la lista de chips (número y fecha desde el nombre del archivo),
+   - genera la lista de chips agrupada por mes (número y fecha desde el nombre del archivo),
    - la inserta en la edición nueva,
-   - regenera `index.html` como copia de la edición más reciente.
-4. `python3 build.py --check` no escribe: falla si algo quedó desincronizado (útil antes del push).
+   - regenera `index.html` como copia de la edición más reciente,
+   - avisa si la edición se pasa del presupuesto de contenido.
+4. **Obligatorio antes del push:** `python3 build.py --check`. Falla si algo quedó
+   desincronizado **o si la edición nueva viola el presupuesto de contenido**.
+   Si falla por presupuesto: recortar la edición (no abreviar: quitar datos
+   secundarios) y volver a correr `build.py`.
 
 > `index.html` **se genera**, no se edita a mano. Si hay que corregir el contenido
 > de la edición actual, editar el archivo en `ediciones/` y volver a correr `build.py`.
