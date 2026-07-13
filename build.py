@@ -22,6 +22,7 @@ congeladas): solo reescribe la mas reciente y `index.html`.
 """
 
 import argparse
+import html
 import re
 import sys
 from pathlib import Path
@@ -32,6 +33,13 @@ INDEX = ROOT / "index.html"
 
 MESES = ["ene", "feb", "mar", "abr", "may", "jun",
          "jul", "ago", "sep", "oct", "nov", "dic"]
+MESES_LARGO = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+               "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+
+# Estilo inline del subtitulo de mes en el archivo: inline para no depender
+# del <style> de cada edicion (las antiguas estan congeladas).
+ESTILO_MES = ("margin:16px 0 10px;font-size:11px;letter-spacing:.18em;"
+              "text-transform:uppercase;color:var(--muted)")
 
 # Etiquetas extra opcionales por archivo (p. ej. una 2a edicion "de tarde").
 # La clave es el nombre del archivo dentro de ediciones/.
@@ -42,6 +50,87 @@ ETIQUETAS = {
 NOMBRE_RE = re.compile(r"^(\d{4})-(\d{2})-(\d{2})(?:-v(\d+))?\.html$")
 MARCADORES_RE = re.compile(
     r"<!-- ARCHIVE:START -->.*?<!-- ARCHIVE:END -->", re.DOTALL)
+
+# ---------------------------------------------------------------------------
+# Presupuesto de contenido (anti-inflacion).
+#
+# El contenido fue creciendo edicion a edicion sin que nadie lo decidiera:
+# de ~2.000 palabras (ediciones #7-#8, el patron bueno) a ~5.900 (9 jul).
+# Estos limites estan calibrados en las ediciones #7-#8 con algo de margen.
+# Se validan solo en la edicion mas reciente (las antiguas quedan congeladas)
+# y solo a partir de LINT_DESDE.
+# ---------------------------------------------------------------------------
+LINT_DESDE = (2026, 7, 11)
+LIMITES = {
+    "total": 2400,        # palabras visibles de la edicion (sin el archivo de chips)
+    "seccion": 450,       # palabras por <section>
+    "li": 110,            # palabras por <li> (una viñeta = 2-3 frases, no 3 parrafos)
+    "lead": 60,           # palabras del parrafo .lead de cada seccion
+    "intro": 30,          # palabras de la intro bajo el masthead
+    "pull": 50,           # palabras por cita .pull
+    "pulls_max": 2,       # citas .pull por edicion
+    "tagline_chars": 45,  # caracteres por .tagline
+    "tagline_segs": 2,    # segmentos separados por · en el .tagline
+}
+
+
+def _palabras(fragmento):
+    texto = re.sub(r"<[^>]+>", " ", fragmento)
+    return len(html.unescape(texto).split())
+
+
+def lint_contenido(texto):
+    """Valida el presupuesto de contenido de una edicion.
+    Devuelve la lista de violaciones (vacia si todo bien)."""
+    t = re.sub(r"<style>.*?</style>", "", texto, flags=re.DOTALL)
+    t = MARCADORES_RE.sub("", t)  # el archivo de chips no cuenta
+    v = []
+
+    total = _palabras(t)
+    if total > LIMITES["total"]:
+        v.append(f"edicion completa: {total} palabras (max {LIMITES['total']})")
+
+    for m in re.finditer(r"<section[^>]*>(.*?)</section>", t, re.DOTALL):
+        sec = m.group(1)
+        h2 = re.search(r"<h2>([^<]*)</h2>", sec)
+        nombre = h2.group(1).strip() if h2 else "?"
+        n = _palabras(sec)
+        if n > LIMITES["seccion"]:
+            v.append(f"seccion «{nombre}»: {n} palabras (max {LIMITES['seccion']})")
+
+    lis = [_palabras(x) for x in re.findall(r"<li[^>]*>(.*?)</li>", t, re.DOTALL)]
+    pasados = [n for n in lis if n > LIMITES["li"]]
+    if pasados:
+        v.append(f"{len(pasados)} <li> superan {LIMITES['li']} palabras "
+                 f"(el mayor: {max(pasados)})")
+
+    leads = [_palabras(x) for x in
+             re.findall(r'<p class="lead">(.*?)</p>', t, re.DOTALL)]
+    pasados = [n for n in leads if n > LIMITES["lead"]]
+    if pasados:
+        v.append(f"{len(pasados)} .lead superan {LIMITES['lead']} palabras "
+                 f"(el mayor: {max(pasados)})")
+
+    intro = re.search(r'class="intro"[^>]*>(.*?)</', t, re.DOTALL)
+    if intro and _palabras(intro.group(1)) > LIMITES["intro"]:
+        v.append(f"intro: {_palabras(intro.group(1))} palabras (max {LIMITES['intro']})")
+
+    pulls = [_palabras(x) for x in
+             re.findall(r'<div class="pull">(.*?)</div>', t, re.DOTALL)]
+    if len(pulls) > LIMITES["pulls_max"]:
+        v.append(f"{len(pulls)} citas .pull (max {LIMITES['pulls_max']})")
+    for n in pulls:
+        if n > LIMITES["pull"]:
+            v.append(f"cita .pull de {n} palabras (max {LIMITES['pull']})")
+
+    for tg in re.findall(r'class="tagline">([^<]*)<', t):
+        tg = html.unescape(tg).strip()
+        if len(tg) > LIMITES["tagline_chars"] or \
+                tg.count("·") + 1 > LIMITES["tagline_segs"]:
+            v.append(f"tagline demasiado largo: «{tg}» "
+                     f"(max {LIMITES['tagline_chars']} chars, "
+                     f"{LIMITES['tagline_segs']} segmentos)")
+    return v
 
 
 def descubrir_ediciones():
@@ -84,9 +173,19 @@ def descubrir_ediciones():
 
 
 def construir_archivo(ediciones, prefijo):
-    """HTML del bloque .archive completo, con las rutas usando `prefijo`."""
+    """HTML del bloque .archive completo, agrupado por mes, con las rutas
+    usando `prefijo`."""
     lineas = []
+    mes_abierto = None
     for i, ed in enumerate(ediciones):
+        y, mo = ed["orden"][0], ed["orden"][1]
+        if (y, mo) != mes_abierto:
+            if mes_abierto is not None:
+                lineas.append("    </div>")
+            lineas.append(
+                f'    <div style="{ESTILO_MES}">{MESES_LARGO[mo - 1]} {y}</div>')
+            lineas.append('    <div class="chips">')
+            mes_abierto = (y, mo)
         es_actual = i == len(ediciones) - 1
         clase = "chip today" if es_actual else "chip"
         texto = f'{ed["num"]} · {ed["fecha"]}'
@@ -96,13 +195,12 @@ def construir_archivo(ediciones, prefijo):
             texto += " · actual"
         lineas.append(
             f'      <a class="{clase}" href="{prefijo}{ed["file"]}">{texto}</a>')
-    chips = "\n".join(lineas)
+    lineas.append("    </div>")
+    cuerpo = "\n".join(lineas)
     return (
         "  <div class=\"archive\">\n"
         "    <h3>📚 Ediciones anteriores</h3>\n"
-        "    <div class=\"chips\">\n"
-        f"{chips}\n"
-        "    </div>\n"
+        f"{cuerpo}\n"
         "  </div>"
     )
 
@@ -137,6 +235,14 @@ def main():
 
     index_actual = INDEX.read_text(encoding="utf-8") if INDEX.exists() else ""
 
+    # Presupuesto de contenido: solo la edicion mas reciente y solo desde
+    # LINT_DESDE (las anteriores quedan como estan).
+    violaciones = []
+    if reciente["clave_dia"] >= LINT_DESDE:
+        violaciones = lint_contenido(texto_reciente)
+    for msg in violaciones:
+        print(f"⚠️  presupuesto: {msg}")
+
     if args.check:
         desync = []
         if nuevo_reciente != texto_reciente:
@@ -145,6 +251,10 @@ def main():
             desync.append("index.html")
         if desync:
             print("Desincronizado (corre `python3 build.py`): " + ", ".join(desync))
+            sys.exit(1)
+        if violaciones:
+            print(f"FALLA el presupuesto de contenido en {reciente['file']}: "
+                  "recortar la edicion y volver a correr build.py.")
             sys.exit(1)
         print(f"OK · {len(ediciones)} ediciones · reciente {reciente['num']} "
               f"({reciente['fecha']})")
