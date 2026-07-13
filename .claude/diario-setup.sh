@@ -11,12 +11,25 @@ git config user.name  "Claude"                 2>/dev/null
 git config user.email "noreply@anthropic.com"  2>/dev/null
 
 # Autenticación para el push.
+#
+# origin queda SIEMPRE en la URL canónica de GitHub. En el sandbox de Claude
+# Code web, el proxy de la sesión reescribe github.com (insteadOf que inyecta
+# el entorno, con puerto que CAMBIA por sesión) y autentica el push él solo.
+# Fuera del sandbox, si existe GH_PAT, un credential helper acotado a
+# github.com lo entrega en el formato correcto (x-access-token:TOKEN).
+#
+# NUNCA incrustar el token en la URL del remote: el formato usuario-sin-
+# contraseña rompe el push no interactivo ("terminal prompts disabled") y el
+# token queda impreso en `git remote -v` y en los mensajes de error de git.
+git remote set-url origin "https://github.com/vsuareeez/diario-vicho.git" 2>/dev/null
+
 if [ -n "$GH_PAT" ]; then
-  # Vía token: directa a github.com, no depende del proxy de la sesión.
-  git remote set-url origin "https://${GH_PAT}@github.com/vsuareeez/diario-vicho.git" 2>/dev/null
-  echo "[diario] OK: publicación lista vía GH_PAT. Para publicar: git push origin HEAD:main"
+  git config credential."https://github.com".helper \
+    '!f() { echo username=x-access-token; echo "password=${GH_PAT}"; }; f' 2>/dev/null
+  echo "[diario] OK: origin=github.com (proxy de sesión o GH_PAT vía credential helper)."
 else
-  echo "[diario] AVISO: GH_PAT no está definido. Se intentará el proxy de la sesión (origin actual)."
-  echo "[diario] Si el push da 403/permiso denegado, define GH_PAT en las variables de entorno del entorno, o activa el permiso de escritura de la GitHub App."
+  echo "[diario] OK: origin=github.com (push vía proxy de la sesión)."
+  echo "[diario] Si el push da 403, define GH_PAT o activa el permiso de escritura de la GitHub App."
 fi
+echo "[diario] Publicar: git checkout main && git merge <rama-claude> && git push origin main"
 exit 0

@@ -137,6 +137,50 @@ def lint_contenido(texto):
     return v
 
 
+# El recuadro .photo es una franja ~3.3:1; object-fit:cover recorta por el
+# centro vertical y decapita cualquier foto vertical. Cada <img> debe traer
+# un object-position elegido a proposito (caras ~20%, edificios ~35%...).
+ONERROR_OK = 'onerror="this.nextElementSibling.remove();this.remove()"'
+
+
+def lint_html(texto, clave_dia):
+    """Reglas de calidad HTML de la edicion (antes solo vivian en el prompt
+    de la rutina y dependian de la memoria). Devuelve lista de violaciones."""
+    t = re.sub(r"<style>.*?</style>", "", texto, flags=re.DOTALL)
+    t = MARCADORES_RE.sub("", t)
+    v = []
+
+    if not re.search(r"<h1[\s>]", t):
+        v.append("falta <h1> para el titulo principal")
+
+    y, mo, d = clave_dia
+    fecha = f"{d} de {MESES_LARGO[mo - 1].lower()} de {y}"
+    titulo = re.search(r"<title>(.*?)</title>", t, re.DOTALL)
+    if not titulo or fecha not in titulo.group(1):
+        v.append(f"el <title> no incluye la fecha «{fecha}»")
+
+    imgs = re.findall(r"<img\b[^>]*>", t)
+    if not imgs:
+        v.append("la edicion no tiene imagenes")
+    for i, img in enumerate(imgs, 1):
+        if ONERROR_OK not in img:
+            v.append(f"img #{i}: el onerror debe borrar imagen y credito: {ONERROR_OK}")
+        if "alt=" not in img:
+            v.append(f"img #{i}: falta alt")
+        if "object-position" not in img:
+            v.append(f'img #{i}: falta style="object-position:50% Y%" (encuadre del sujeto)')
+        if i == 1 and 'loading="lazy"' in img:
+            v.append('img #1: no debe llevar loading="lazy" (va above the fold)')
+        if i > 1 and 'loading="lazy"' not in img:
+            v.append(f'img #{i}: falta loading="lazy"')
+
+    con_credito = len(re.findall(r'<img\b[^>]*>\s*<span class="credit">', t))
+    if imgs and con_credito != len(imgs):
+        v.append(f'{len(imgs) - con_credito} <img> sin <span class="credit"> como '
+                 "hermano inmediato (el onerror borra el hermano siguiente)")
+    return v
+
+
 def descubrir_ediciones():
     """Devuelve la lista de ediciones ordenada cronologicamente, cada una como
     un dict con: file, fecha (str legible), num (#N / #N.k), etiqueta."""
@@ -244,13 +288,14 @@ def main():
 
     index_actual = INDEX.read_text(encoding="utf-8") if INDEX.exists() else ""
 
-    # Presupuesto de contenido: solo la edicion mas reciente y solo desde
-    # LINT_DESDE (las anteriores quedan como estan).
+    # Presupuesto de contenido + calidad HTML: solo la edicion mas reciente
+    # y solo desde LINT_DESDE (las anteriores quedan como estan).
     violaciones = []
     if reciente["clave_dia"] >= LINT_DESDE:
-        violaciones = lint_contenido(texto_reciente)
+        violaciones = (lint_contenido(texto_reciente)
+                       + lint_html(texto_reciente, reciente["clave_dia"]))
     for msg in violaciones:
-        print(f"⚠️  presupuesto: {msg}")
+        print(f"⚠️  {msg}")
 
     if args.check:
         desync = []
@@ -262,8 +307,8 @@ def main():
             print("Desincronizado (corre `python3 build.py`): " + ", ".join(desync))
             sys.exit(1)
         if violaciones:
-            print(f"FALLA el presupuesto de contenido en {reciente['file']}: "
-                  "recortar la edicion y volver a correr build.py.")
+            print(f"FALLA presupuesto/calidad HTML en {reciente['file']}: "
+                  "corregir la edicion y volver a correr build.py.")
             sys.exit(1)
         print(f"OK · {len(ediciones)} ediciones · reciente {reciente['num']} "
               f"({reciente['fecha']})")

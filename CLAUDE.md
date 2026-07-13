@@ -15,13 +15,17 @@ git merge claude/<nombre-rama>
 git push origin main
 ```
 
-Para el push, usar el token configurado en la variable de entorno `GH_PAT`:
+Eso es todo: el hook de sesión (`.claude/diario-setup.sh`) deja `origin` en
+`https://github.com/vsuareeez/diario-vicho.git` y la autenticación ya está
+resuelta (el proxy de la sesión reescribe github.com y autentica el push;
+fuera del sandbox, un credential helper entrega `GH_PAT`).
 
-```bash
-git remote set-url origin "https://${GH_PAT}@github.com/vsuareeez/diario-vicho.git"
-git push origin main
-git remote set-url origin "http://local_proxy@127.0.0.1:44585/git/vsuareeez/diario-vicho"
-```
+- **Nunca** poner `GH_PAT` dentro de una URL de remote: rompe el push no
+  interactivo y el token queda impreso en errores y logs.
+- **Nunca** hardcodear URLs de proxy (`127.0.0.1:<puerto>`): el puerto cambia
+  en cada sesión.
+- Si el push falla, restaurar la URL canónica y reintentar:
+  `git remote set-url origin https://github.com/vsuareeez/diario-vicho.git`
 
 ## Numeración de ediciones
 - Primera edición del día: `#N` → archivo `ediciones/YYYY-MM-DD.html`
@@ -36,12 +40,36 @@ Cinco secciones con colores CSS fijos:
 - **Geografía e Historia** → `.geo` (azul claro `#3fb6d6`)
 - **Idiomas** → `.lang` (amarillo `#ffcf6b`)
 
-## Reglas HTML obligatorias
+## Reglas HTML obligatorias (`build.py --check` las hace cumplir)
 - `<h1>` para el título principal (no `<div>`)
 - `onerror="this.nextElementSibling.remove();this.remove()"` en cada `<img>` para ocultar imagen Y crédito si falla
-- Sin `loading="lazy"` en la primera imagen de la primera sección
-- `<title>` debe incluir la fecha del día
-- Imágenes: siempre verificar filename exacto en Wikimedia Commons antes de usar
+- El `<span class="credit">` va **inmediatamente después** de su `<img>` (el onerror borra al hermano siguiente)
+- Sin `loading="lazy"` en la primera imagen; **con** `loading="lazy"` en todas las demás
+- `alt` descriptivo en cada `<img>`
+- `<title>` debe incluir la fecha del día ("12 de julio de 2026")
+- URLs de imagen: `Special:FilePath/<archivo>?width=1200`
+
+## Imágenes — encuadre obligatorio con `object-position`
+El recuadro `.photo` es una franja muy ancha (~3.3:1) y `object-fit:cover`
+recorta por el **centro vertical**: en cualquier foto vertical eso muestra el
+pecho y corta la cara. Por eso **cada `<img>` lleva
+`style="object-position:50% Y%"`** elegido según el tipo de foto
+(`build.py --check` lo exige):
+
+| Tipo de foto | Y |
+|---|---|
+| Retrato / busto / cara | **20–25%** |
+| Persona de cuerpo entero | **15%** |
+| Edificio, monumento | **30–35%** |
+| Paisaje, estadio, sala amplia, horizontal genérica | **40–50%** |
+
+Preferir fotos **horizontales** cuando haya opción: sufren mucho menos recorte.
+
+Verificación del filename: `commons.wikimedia.org` está **bloqueado por la red
+del sandbox** (no intentar curl ni WebFetch: da 403). Verificar el nombre
+exacto con WebSearch (`site:commons.wikimedia.org File:...`) y deducir la
+orientación/composición de la descripción del resultado. Nunca inventar
+nombres de archivo.
 
 ## Presupuesto de contenido — OBLIGATORIO (`build.py --check` lo hace cumplir)
 El diario se infló edición a edición sin que nadie lo decidiera: de ~2.000 palabras
@@ -84,9 +112,10 @@ El `.tagline` es una **etiqueta, no un resumen**. Se descontroló con el tiempo
    - regenera `index.html` como copia de la edición más reciente,
    - avisa si la edición se pasa del presupuesto de contenido.
 4. **Obligatorio antes del push:** `python3 build.py --check`. Falla si algo quedó
-   desincronizado **o si la edición nueva viola el presupuesto de contenido**.
-   Si falla por presupuesto: recortar la edición (no abreviar: quitar datos
-   secundarios) y volver a correr `build.py`.
+   desincronizado, **si la edición nueva viola el presupuesto de contenido** o
+   **si incumple las reglas HTML** (h1, onerror, crédito hermano, lazy, alt,
+   fecha en el título, object-position). Si falla por presupuesto: recortar la
+   edición (no abreviar: quitar datos secundarios) y volver a correr `build.py`.
 
 > `index.html` **se genera**, no se edita a mano. Si hay que corregir el contenido
 > de la edición actual, editar el archivo en `ediciones/` y volver a correr `build.py`.
