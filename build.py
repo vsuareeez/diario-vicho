@@ -36,10 +36,14 @@ MESES = ["ene", "feb", "mar", "abr", "may", "jun",
 MESES_LARGO = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
 
-# Estilo inline del subtitulo de mes en el archivo: inline para no depender
-# del <style> de cada edicion (las antiguas estan congeladas).
-ESTILO_MES = ("margin:16px 0 10px;font-size:11px;letter-spacing:.18em;"
-              "text-transform:uppercase;color:var(--muted)")
+# El archivo se agrupa por mes con <details>/<summary>: plegable sin JS.
+# Estilos inline para no depender del <style> de cada edicion (las antiguas
+# estan congeladas). Solo el mes de la edicion actual queda abierto.
+ESTILO_DETAILS = "margin:0 0 10px"
+ESTILO_MES = ("cursor:pointer;font-size:11px;letter-spacing:.18em;"
+              "text-transform:uppercase;color:var(--muted);"
+              "padding:6px 0;user-select:none")
+ESTILO_CHIPS_MES = "margin:8px 0 4px"
 
 # Etiquetas extra opcionales por archivo (p. ej. una 2a edicion "de tarde").
 # La clave es el nombre del archivo dentro de ediciones/.
@@ -173,18 +177,23 @@ def descubrir_ediciones():
 
 
 def construir_archivo(ediciones, prefijo):
-    """HTML del bloque .archive completo, agrupado por mes, con las rutas
-    usando `prefijo`."""
+    """HTML del bloque .archive completo: un <details> plegable por mes
+    (solo el mes actual abierto), con las rutas usando `prefijo`."""
+    mes_actual = ediciones[-1]["orden"][:2]
     lineas = []
     mes_abierto = None
     for i, ed in enumerate(ediciones):
         y, mo = ed["orden"][0], ed["orden"][1]
         if (y, mo) != mes_abierto:
             if mes_abierto is not None:
-                lineas.append("    </div>")
+                lineas.append("    </div>\n    </details>")
+            abierto = " open" if (y, mo) == mes_actual else ""
+            cuantas = sum(1 for e in ediciones if e["orden"][:2] == (y, mo))
+            lineas.append(f'    <details{abierto} style="{ESTILO_DETAILS}">')
             lineas.append(
-                f'    <div style="{ESTILO_MES}">{MESES_LARGO[mo - 1]} {y}</div>')
-            lineas.append('    <div class="chips">')
+                f'    <summary style="{ESTILO_MES}">{MESES_LARGO[mo - 1]} {y}'
+                f' · {cuantas} ediciones</summary>')
+            lineas.append(f'    <div class="chips" style="{ESTILO_CHIPS_MES}">')
             mes_abierto = (y, mo)
         es_actual = i == len(ediciones) - 1
         clase = "chip today" if es_actual else "chip"
@@ -195,7 +204,7 @@ def construir_archivo(ediciones, prefijo):
             texto += " · actual"
         lineas.append(
             f'      <a class="{clase}" href="{prefijo}{ed["file"]}">{texto}</a>')
-    lineas.append("    </div>")
+    lineas.append("    </div>\n    </details>")
     cuerpo = "\n".join(lineas)
     return (
         "  <div class=\"archive\">\n"
